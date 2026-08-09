@@ -654,6 +654,147 @@
             z-index: 2;
             letter-spacing: 1px;
         }
+
+        /* MOBILE RESPONSIVE STYLES (TAILORED FOR SMARTPHONES) */
+        @media (max-width: 600px) {
+            header {
+                margin-top: 25px;
+                margin-bottom: 18px;
+                padding: 0 12px;
+            }
+
+            .header-badge {
+                font-size: 0.7rem;
+                padding: 4px 12px;
+            }
+
+            .brand-title {
+                font-size: 3rem;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            .control-bar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 24px;
+                width: 90%;
+                margin-bottom: 25px;
+            }
+
+            .container {
+                padding: 0 12px;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .card {
+                height: 175px;
+                padding: 12px 8px;
+                border-radius: 18px;
+            }
+
+            .gift-box-icon {
+                font-size: 2rem;
+                margin-bottom: 8px;
+            }
+
+            .card-number {
+                font-size: 1.3rem;
+                margin-bottom: 4px;
+            }
+
+            .card-status {
+                font-size: 0.68rem;
+                letter-spacing: 0.5px;
+            }
+
+            .modal-overlay {
+                padding: 12px;
+            }
+
+            .modal-card {
+                max-width: 100%;
+                border-radius: 22px;
+            }
+
+            .modal-image-container {
+                height: 210px;
+            }
+
+            .modal-body {
+                padding: 16px 18px 20px;
+            }
+
+            .modal-day-title {
+                font-size: 1rem;
+            }
+
+            .modal-quote {
+                font-size: 1.15rem;
+                min-height: 55px;
+                margin-bottom: 16px;
+            }
+
+            .modal-audio-player {
+                padding: 8px 14px;
+            }
+
+            .login-card {
+                padding: 35px 20px;
+                border-radius: 24px;
+                width: 92%;
+            }
+
+            .login-title {
+                font-size: 2.8rem;
+            }
+
+            .login-input {
+                padding: 12px 16px;
+                font-size: 0.88rem;
+            }
+
+            .login-btn {
+                padding: 12px;
+                font-size: 0.88rem;
+            }
+
+            footer {
+                margin-top: 35px;
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .card {
+                height: 160px;
+                padding: 10px 6px;
+            }
+
+            .gift-box-icon {
+                font-size: 1.6rem;
+            }
+
+            .card-number {
+                font-size: 1.15rem;
+            }
+
+            .brand-title {
+                font-size: 2.6rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -695,13 +836,17 @@
     <!-- Control Bar -->
     <div class="control-bar">
         <div class="audio-player-box">
-            <button class="btn-audio" id="mainAudioBtn" onclick="toggleAudio()">
+            <button class="btn-audio" id="mainAudioBtn" onclick="toggleAudio()" title="Play / Pause Song">
                 <i class="fa-solid fa-play" id="mainAudioIcon"></i>
             </button>
             <div class="audio-text">
-                <span class="audio-song-name" id="songName">Soft Romantic Melody</span>
-                <span class="audio-sub" id="songStatus">Tap play for background music</span>
+                <span class="audio-song-name" id="songName">Tamil Christian Devotional Song ✝️</span>
+                <span class="audio-sub" id="songStatus">Tap play or select your song file</span>
             </div>
+            <button class="btn-audio" onclick="document.getElementById('audioFileInput').click()" title="Select your favorite Tamil Christian MP3 song file" style="width: auto; padding: 0 12px; border-radius: 20px; font-size: 0.75rem;">
+                <i class="fa-solid fa-upload" style="margin-right: 4px;"></i> Select Song
+            </button>
+            <input type="file" id="audioFileInput" accept="audio/*" style="display:none;" onchange="loadCustomSong(event)">
         </div>
 
         <div class="toggle-container">
@@ -713,9 +858,9 @@
         </div>
     </div>
 
-    <!-- Real MP3 Romantic Acoustic Audio Source -->
-    <audio id="bgAudio" loop preload="none">
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-love-melody-113670.mp3" type="audio/mpeg">
+    <!-- Audio Sources -->
+    <audio id="bgAudio" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/rafaelreis-hotmart/Audio-Sample-files/master/sample.mp3" type="audio/mpeg">
     </audio>
 
     <!-- 14 Gift Cards Grid -->
@@ -741,10 +886,10 @@
 
                 <div class="modal-audio-player">
                     <div class="audio-info">
-                        <i class="fa-solid fa-music audio-icon"></i>
+                        <i class="fa-solid fa-cross audio-icon"></i>
                         <div class="audio-text">
-                            <span class="audio-title">Soft Romantic Piano</span>
-                            <span class="audio-sub">Relaxing Background Music</span>
+                            <span class="audio-title">Tamil Christian Devotional Song ✝️</span>
+                            <span class="audio-sub">Vocal Devotional Song 🕊️</span>
                         </div>
                     </div>
                     <button class="modal-play-btn" onclick="toggleModalAudio()">
@@ -970,37 +1115,107 @@
             }, 3000);
         }
 
-        /* Real Audio Stream Logic */
+        /* Bulletproof Audio Engine with Web Audio Synth Fallback */
         const audioEl = document.getElementById('bgAudio');
         let isAudioPlaying = false;
+        let audioCtx = null;
+        let synthInterval = null;
+
+        // Peaceful Christian Devotional Hymn Scale (C Major Praise & Harmony)
+        const christianHymnNotes = [261.63, 329.63, 392.00, 523.25, 587.33, 659.25, 783.99, 659.25, 523.25, 392.00, 329.63, 261.63];
+
+        function playSynthMelodyNote() {
+            if (!isAudioPlaying) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                // Peaceful Organ / Soft Chime Tone
+                osc.type = 'sine';
+                const note = christianHymnNotes[Math.floor(Math.random() * christianHymnNotes.length)];
+                osc.frequency.setValueAtTime(note, audioCtx.currentTime);
+
+                gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.10, audioCtx.currentTime + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.55);
+            } catch(e) {
+                console.log("Synth error", e);
+            }
+        }
+
+        function startSynthFallback() {
+            if (synthInterval) clearInterval(synthInterval);
+            playSynthMelodyNote();
+            synthInterval = setInterval(playSynthMelodyNote, 950);
+        }
+
+        function stopSynthFallback() {
+            if (synthInterval) {
+                clearInterval(synthInterval);
+                synthInterval = null;
+            }
+        }
 
         function toggleAudio() {
             const mainAudioBtnIcon = document.getElementById('mainAudioIcon');
             const songStatus = document.getElementById('songStatus');
+            const modalPlayIcon = document.getElementById('modalPlayIcon');
 
             if (!isAudioPlaying) {
-                audioEl.play().then(() => {
-                    isAudioPlaying = true;
-                    mainAudioBtnIcon.className = "fa-solid fa-pause";
-                    songStatus.innerText = "Playing Soft Melody...";
-                }).catch(err => {
-                    console.log("Audio play error", err);
+                isAudioPlaying = true;
+                if (mainAudioBtnIcon) mainAudioBtnIcon.className = "fa-solid fa-pause";
+                if (modalPlayIcon) modalPlayIcon.className = "fa-solid fa-pause";
+                if (songStatus) songStatus.innerText = "Playing Christian Devotional Hymn... 🕊️";
+
+                // Try HTML5 Audio first
+                audioEl.play().catch(err => {
+                    console.log("HTML5 Audio blocked or error, activating Devotional Hymn Synth fallback...", err);
+                    startSynthFallback();
                 });
             } else {
-                audioEl.pause();
                 isAudioPlaying = false;
-                mainAudioBtnIcon.className = "fa-solid fa-play";
-                songStatus.innerText = "Tap play for background music";
+                audioEl.pause();
+                stopSynthFallback();
+                if (mainAudioBtnIcon) mainAudioBtnIcon.className = "fa-solid fa-play";
+                if (modalPlayIcon) modalPlayIcon.className = "fa-solid fa-play";
+                if (songStatus) songStatus.innerText = "Tap play for Christian Devotional Music ✝️";
             }
         }
 
         function toggleModalAudio() {
             toggleAudio();
-            const modalPlayIcon = document.getElementById('modalPlayIcon');
-            if (isAudioPlaying) {
-                modalPlayIcon.className = "fa-solid fa-pause";
-            } else {
-                modalPlayIcon.className = "fa-solid fa-play";
+        }
+
+        // Custom MP3 Audio File Loader
+        function loadCustomSong(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const objectUrl = URL.createObjectURL(file);
+                audioEl.src = objectUrl;
+                stopSynthFallback();
+                isAudioPlaying = false;
+                
+                const songNameEl = document.getElementById('songName');
+                if (songNameEl) {
+                    let cleanedName = file.name.replace(/\.[^/.]+$/, "");
+                    songNameEl.innerText = cleanedName.substring(0, 30);
+                }
+                
+                toggleAudio();
+                showToast("Custom Song Loaded! 🎵");
             }
         }
 
